@@ -1,0 +1,19 @@
+{
+  "name": "Meu Controle Financeiro — Sabores do Recôncavo",
+  "short_name": "Controle Financeiro",
+  "description": "Controle financeiro pessoal e do restaurante.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f1e8",
+  "theme_color": "#4a211d",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "1280x1280",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

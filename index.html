@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Controle Financeiro</title>
+<style>
+:root{--bg:#f8f1e8;--card:#fffdf9;--text:#33251f;--muted:#76685f;--line:#ead9ca;--primary:#d85a2b;--green:#168447;--red:#b83a32;--orange:#c77a22}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#4a211d;color:#fff;padding:18px 22px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:21px}.wrap{max-width:1150px;margin:auto;padding:18px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}button,.btn{border:0;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600;background:#efe2d6;color:#4a211d}
+nav button.active{background:var(--primary);color:#fff}.primary{background:var(--primary);color:#fff}.danger{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}
+.view{display:none}.view.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 1px 2px #00000008}.label{color:var(--muted);font-size:13px}.value{font-size:23px;font-weight:700;margin-top:6px}.green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}
+.section{margin-top:18px}.section h2{font-size:17px;margin:0 0 10px}.table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line);font-size:14px}th{background:#f9fafb}.empty{padding:20px;color:var(--muted)}
+form{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.full{grid-column:1/-1}label{font-size:13px;font-weight:600}input,select{width:100%;margin-top:5px;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font-size:14px}.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.status{padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700;display:inline-block}.paid{background:#dcfce7;color:#166534}.pending{background:#fef3c7;color:#92400e}.overdue{background:#fee2e2;color:#991b1b}.filter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.filter>*{min-width:150px}
+.notice{padding:12px;border-radius:10px;background:#fff4e8;border:1px solid #f0c9a8;margin-bottom:14px;font-size:14px}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}form{grid-template-columns:1fr}.full{grid-column:auto}th,td{white-space:nowrap}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.show{display:flex}.modal-box{background:#fff;border-radius:14px;padding:20px;max-width:720px;width:100%;max-height:92vh;overflow:auto}.small{font-size:12px;color:var(--muted)}.btn-edit{background:#dbeafe;color:#1d4ed8}.btn-delete{background:#fee2e2;color:#991b1b}.btn-pay{background:#dcfce7;color:#166534}
+
+.home-section-title{margin:20px 0 10px;font-size:15px;font-weight:800;letter-spacing:.2px}
+.home-section{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fffaf5;margin-bottom:14px}
+.home-section .grid{grid-template-columns:repeat(5,1fr)}
+@media(max-width:1000px){.home-section .grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.home-section .grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.home-section .grid{grid-template-columns:1fr}}
+
+.topbar{padding:0;display:flex;align-items:center}.brand{display:flex;align-items:center;gap:12px}.brand img{width:52px;height:52px;object-fit:contain;border-radius:50%;background:#fff}.brand h1{margin:0;font-size:21px}.subtitle{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;opacity:.82;margin-top:3px}
+.home-section-title{font-size:16px}.home-section{overflow:hidden}
+#cards{display:block}.mobile-new{display:none}
+@media(max-width:700px){
+ body{padding-bottom:76px}
+ header{padding:10px 14px;position:sticky;top:0}
+ .wrap{padding:14px}
+ .brand img{width:44px;height:44px}.brand h1{font-size:18px}.subtitle{font-size:9px;letter-spacing:1px}
+ nav{position:fixed;left:0;right:0;bottom:0;margin:0;padding:8px 5px 7px;background:#fff;border-top:1px solid var(--line);z-index:15;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;box-shadow:0 -3px 12px #00000012}
+ nav button{padding:8px 2px;font-size:10px;border-radius:8px;background:transparent;color:#4b5563}
+ nav button.active{background:transparent;color:var(--primary)}
+ .home-section{padding:10px;border-radius:12px;margin-bottom:12px}
+ .home-section-title{font-size:14px;margin:5px 4px 9px}
+ .home-section .grid{grid-template-columns:repeat(2,1fr);gap:8px}
+ .home-section .card{padding:11px;border-radius:11px}
+ .home-section .value{font-size:18px}
+ .home-section .label{font-size:11px}
+ .home-section .card:first-child{grid-column:1/-1}
+ .mobile-new{display:block;width:100%;margin-top:8px;font-size:13px;padding:11px;border-radius:10px}
+ .grid{grid-template-columns:1fr 1fr;gap:8px}
+ .card{padding:13px}
+ .value{font-size:19px}
+ form{grid-template-columns:1fr}
+ .full{grid-column:auto}
+ .filter{display:grid;grid-template-columns:1fr 1fr}
+ .filter>*{min-width:0}
+ .table-wrap{font-size:12px}
+ th,td{padding:8px}
+ .actions button{font-size:11px;padding:8px 9px}
+ .modal-box{padding:15px}
+}
+@media(max-width:420px){
+ .filter{grid-template-columns:1fr}
+ .home-section .grid{grid-template-columns:1fr 1fr}
+ .home-section .card:first-child{grid-column:1/-1}
+}
+
+#lockScreen{position:fixed;inset:0;background:#f5f6f8;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px}
+#lockScreen.hidden{display:none}
+.lock-box{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 12px 40px #00000018;text-align:center}
+.lock-logo{width:78px;height:78px;object-fit:contain;border-radius:50%;margin-bottom:10px}
+.lock-box h2{margin:4px 0 6px;color:#8f1d24}.lock-box p{color:var(--muted);font-size:14px;line-height:1.45;margin:0 0 18px}
+.lock-box input{margin-bottom:10px}.lock-msg{min-height:20px;font-size:13px;color:#991b1b;margin:4px 0 10px}
+.security-badge{font-size:11px;color:#166534;background:#dcfce7;border-radius:999px;padding:5px 9px;display:inline-block;margin-bottom:15px}
+.lock-btn{background:transparent;color:#fff;border:1px solid #ffffff44;padding:7px 10px;font-size:12px}
+.topbar{justify-content:space-between}
+@media(max-width:700px){.lock-box{padding:22px}.lock-logo{width:68px;height:68px}}
+</style>
+
+
+<meta name="theme-color" content="#ef4b23">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meu Controle Financeiro">
+<link rel="manifest" href="manifest.json">
+
+
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
+<style>
+.sync-btn{background:transparent;color:#fff;border:1px solid #ffffff44;padding:7px 10px;font-size:12px}
+.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#9ca3af;margin-right:5px}
+.sync-dot.ok{background:#22c55e}.sync-dot.err{background:#ef4444}.sync-dot.busy{background:#f59e0b}
+#syncModal{position:fixed;inset:0;background:#0008;z-index:110;display:none;align-items:center;justify-content:center;padding:18px}
+#syncModal.show{display:flex}.sync-box{width:min(440px,100%);background:#fff;border-radius:16px;padding:22px;box-shadow:0 18px 60px #0004}
+.sync-box{max-height:90vh;overflow:auto}.sync-box h3{margin:0 0 8px}.sync-box p{font-size:13px;color:var(--muted);line-height:1.45}
+.sync-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.sync-actions button{flex:1;min-width:120px}
+#syncMsg{min-height:20px;font-size:13px;color:#991b1b;margin:8px 0}
+</style>
+
+<style>
+:root{--burgundy:#4a211d;--cream:#f8f1e8;--peach:#fff4e8}
+body{background:var(--cream)}
+header{box-shadow:0 2px 10px #4a211d18}
+.home-section{border-color:#ead2bf;background:#fffaf5}
+.home-section-title{color:#6d2b22}
+.home-section .card{background:#fffdf9;border-color:#ead9ca}
+nav button{background:#efe2d6;color:#5b342c}
+nav button.active{background:#d85a2b;color:#fff}
+.primary{background:#d85a2b;color:#fff}
+.notice{color:#4d352d}
+.table-wrap{border-color:#ead9ca}
+th{background:#fbefe5}
+.lock-box{border-color:#ead9ca}
+.lock-box h2{color:#8f2f25}
+</style>
+</head>
+<body>
+
+<div id="lockScreen">
+  <div class="lock-box">
+    <img class="lock-logo" src="logo.png" alt="Logo Sabores do Recôncavo">
+    <h2 id="lockTitle">Meu Controle Financeiro</h2>
+    <p>Entre ou crie sua conta para começar. Seus lançamentos ficam salvos neste dispositivo e são enviados automaticamente quando há conexão.</p>
+    <button class="primary" onclick="openSyncModal()">Entrar / criar conta</button>
+    <p class="small">Use a proteção de tela do dispositivo. Esta versão não exige uma senha de cofre separada.</p>
+  </div>
+</div>
+
+<div id="syncModal">
+<div class="sync-box">
+<h3>☁️ Sincronização</h3>
+<p id="syncIntro">Entre com sua conta para usar os mesmos lançamentos no celular e no computador.</p>
+<div id="syncCredentials"><input id="syncEmail" type="email" placeholder="E-mail" autocomplete="email">
+<input id="syncPassword" type="password" placeholder="Senha da conta" autocomplete="current-password">
+
+<div class="sync-actions">
+<button class="primary" onclick="syncLogin()">Entrar</button>
+<button class="success" onclick="syncSignup()">Criar conta</button>
+
+</div>
+</div><button onclick="closeSyncModal()">Fechar</button><div id="syncMsg"></div><div id="conflicts"></div>
+<div id="syncLogged" style="display:none">
+<hr>
+<div class="small" id="syncUser"></div>
+<div class="sync-actions">
+<button class="primary" onclick="syncNow(true)">☁️ Sincronizar agora</button>
+<button onclick="syncLogout()">Sair da conta</button>
+</div>
+</div>
+<div id="syncRecover" style="display:none">
+<hr>
+<div class="small">Importação opcional da versão antiga. Informe a senha antiga somente para abrir um cofre existente. Confirme a conta de destino antes de importar.</div>
+<input id="syncRecoverPassword" type="password" placeholder="Senha do cofre antigo" autocomplete="off">
+<button onclick="importLegacy('cloud')">Importar cofre antigo da conta</button>
+<button onclick="importLegacy('local')">Importar cofre antigo deste dispositivo</button>
+<p id="syncRecoverResult" role="status" aria-live="polite" style="white-space:pre-wrap"></p>
+</div>
+<div class="small">Os dados locais e da nova nuvem não têm criptografia de cofre. O acesso remoto usa sua conta e conexão segura. Em dispositivos compartilhados, use um perfil separado do navegador.</div>
+</div></div>
+<div id="syncStatus" role="status" style="padding:8px;background:#fff4d6">Entre na conta para iniciar.</div><header><div class="wrap topbar">
+  <div class="brand">
+    <img src="logo.png" alt="Logo Sabores do Recôncavo">
+    <div><h1>Sabores do Recôncavo</h1><div class="subtitle">Meu Controle Financeiro</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px"><span id="appVersion" class="small" style="color:#fff"></span><button class="sync-btn" onclick="openSyncModal()"><span id="syncDot" class="sync-dot"></span>☁️ Sincronizar</button><button class="lock-btn" onclick="syncLogout()">Sair</button></div>
+</div></header>
+<div class="wrap">
+<nav>
+<button class="active" data-view="inicio">🏠 Início</button>
+<button data-view="lancamento">➕ Lançamento</button>
+<button data-view="movimentacoes">📋 Movimentações</button>
+<button data-view="vencimentos">📅 Vencimentos</button>
+<button data-view="relatorios">📊 Relatórios</button>
+</nav>
+
+<section id="inicio" class="view active">
+<div class="grid" id="cards"></div>
+<div class="section notice"><strong>Como ler o resumo:</strong> o saldo é acumulado e considera somente valores já recebidos/pagos. As entradas e saídas mostram apenas o mês atual. Contas pendentes ficam separadas em "A receber" e "A pagar".</div>
+<div class="section card"><h2>🔔 Próximos vencimentos</h2><div id="homeDue"></div></div>
+<div class="section card"><h2>⚠️ Vencidos</h2><div id="homeOverdue"></div></div>
+</section>
+
+<section id="lancamento" class="view">
+<div class="card">
+<h2>Novo lançamento</h2>
+<div class="small">Escolha se o lançamento é <strong>Pessoal</strong> ou do <strong>Restaurante</strong>. O status será ajustado de acordo com o tipo.</div>
+<form id="form">
+<div><label>Tipo<select id="tipo"><option value="entrada">Entrada</option><option value="saida">Saída</option></select></label></div>
+<div><label>Controle<select id="controle"><option value="pessoal">Pessoal</option><option value="restaurante">Restaurante</option></select></label></div>
+<div class="full"><label>Descrição<input id="descricao" required placeholder="Ex.: Compra de camarão"></label></div>
+<div><label>Categoria<select id="categoria"></select></label></div>
+<div><label>Valor (R$)<input id="valor" required type="number" min="0" step="0.01"></label></div>
+<div><label>Data<input id="data" required type="date"></label></div>
+<div><label>Vencimento<input id="vencimento" type="date"></label></div>
+<div><label>Forma de pagamento<select id="forma"><option>Dinheiro</option><option>Pix</option><option>Cartão</option><option>Boleto</option><option>Transferência</option><option>Outro</option></select></label></div>
+<div><label>Status<select id="status"><option value="pago">Recebido</option><option value="pendente">Pendente</option></select></label><div class="small">Novos lançamentos começam como <strong>Recebido/Pago</strong>. Se ainda não houve recebimento/pagamento, selecione <strong>Pendente</strong>.</div></div>
+<div><label>Recorrência<select id="recorrencia"><option value="nenhuma">Não repetir</option><option value="mensal">Mensal</option><option value="semanal">Semanal</option><option value="anual">Anual</option></select></label></div>
+<div><label>Quantidade<input id="quantidade" type="number" min="1" max="60" value="1"></label></div>
+<div class="full actions"><button class="primary" type="submit">Salvar lançamento</button><button type="button" onclick="limparForm()">Limpar</button></div>
+</form>
+</div>
+<div class="section notice">Seus lançamentos ficam salvos neste dispositivo e são enviados quando há conexão. Use o bloqueio de tela do dispositivo: esta versão não usa senha de cofre nem bloqueio automático.</div>
+</section>
+
+<section id="movimentacoes" class="view">
+<div class="card">
+<h2>📋 Movimentações</h2>
+<div class="filter">
+<select id="fControle"><option value="">Todos</option><option value="pessoal">Pessoal</option><option value="restaurante">Restaurante</option></select>
+<select id="fTipo"><option value="">Entradas e saídas</option><option value="entrada">Entradas</option><option value="saida">Saídas</option></select>
+<select id="fStatus"><option value="">Todos os status</option><option value="pago">Pagos/Recebidos</option><option value="pendente">Pendentes</option></select>
+<input id="fMes" type="month">
+</div>
+<div class="table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Controle</th><th>Categoria</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+</div>
+</section>
+
+<section id="vencimentos" class="view">
+<div class="card"><h2>📅 Vencimentos</h2><div id="dueList"></div></div>
+<div class="section card"><h2>🔔 Notificações</h2>
+<p class="label">O navegador pode avisar sobre contas próximas do vencimento quando você abrir o sistema.</p>
+<label><input type="checkbox" id="n7"> 7 dias antes</label><br>
+<label><input type="checkbox" id="n3"> 3 dias antes</label><br>
+<label><input type="checkbox" id="n1"> 1 dia antes</label><br>
+<label><input type="checkbox" id="n0"> No dia</label><br>
+<label><input type="checkbox" id="nover"> Quando estiver vencida</label>
+</div>
+</section>
+
+<section id="relatorios" class="view">
+<div class="card">
+<h2>📊 Relatórios</h2>
+<div class="filter">
+<label style="min-width:150px">Período<input id="reportMonth" type="month"></label>
+</div>
+<div class="small">Os valores abaixo consideram somente lançamentos cuja data pertence ao período selecionado.</div>
+</div>
+<div class="grid" id="reportCards"></div>
+<div class="section card"><h2>📊 Resumo por categoria</h2><div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Entradas</th><th>Saídas</th></tr></thead><tbody id="catBody"></tbody></table></div></div>
+</section>
+</div>
+
+<div id="editModal" class="modal">
+ <div class="modal-box">
+  <div class="actions" style="justify-content:space-between"><h2>✏️ Editar lançamento</h2><button onclick="closeEdit()">✕</button></div>
+  <form id="editForm">
+   <input type="hidden" id="editId">
+   <div><label>Tipo<select id="eTipo"><option value="entrada">Entrada</option><option value="saida">Saída</option></select></label></div>
+   <div><label>Controle<select id="eControle"><option value="pessoal">Pessoal</option><option value="restaurante">Restaurante</option></select></label></div>
+   <div class="full"><label>Descrição<input id="eDescricao" required></label></div>
+   <div><label>Categoria<select id="eCategoria"></select></label></div>
+   <div><label>Valor (R$)<input id="eValor" required type="number" min="0" step="0.01"></label></div>
+   <div><label>Data<input id="eData" required type="date"></label></div>
+   <div><label>Vencimento<input id="eVencimento" type="date"></label></div>
+   <div><label>Forma de pagamento<select id="eForma"><option>Dinheiro</option><option>Pix</option><option>Cartão</option><option>Boleto</option><option>Transferência</option><option>Outro</option></select></label></div>
+   <div><label>Status<select id="eStatus"><option value="pago">Recebido</option><option value="pendente">Pendente</option></select></label></div>
+   <div class="full actions"><button class="primary" type="submit">Salvar alterações</button><button type="button" onclick="closeEdit()">Cancelar</button></div>
+  </form>
+ </div>
+</div>
+
+<script>
+
+const SECURE_KEY="controle_financeiro_secure_v1";
+const LEGACY_KEY="controle_financeiro_v1";
+const PREF="controle_financeiro_notificacoes";
+let data=[];
+let unlocked=false;
+
+
+async function deriveKey(password,salt){
+ const material=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),{name:"PBKDF2"},false,["deriveKey"]);
+ return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:250000,hash:"SHA-256"},material,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+function b64(input){
+ const arr=input instanceof Uint8Array?input:new Uint8Array(input);
+ let out="";
+ for(let i=0;i<arr.length;i+=0x8000)out+=String.fromCharCode.apply(null,arr.subarray(i,i+0x8000));
+ return btoa(out);
+}
+function bytes(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+async function encryptData(password,obj){
+ const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const key=await deriveKey(password,salt);
+ const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(JSON.stringify(obj)));
+ return {v:1,salt:b64(salt),iv:b64(iv),data:b64(new Uint8Array(ct))};
+}
+/* Envelope: {v,salt,iv,data}. O salt e o IV viajam junto com o conteudo
+   criptografado, portanto qualquer dispositivo que conheca a senha de
+   protecao deriva exatamente a mesma chave (PBKDF2-SHA256 250k / AES-GCM).
+   Nada especifico do dispositivo entra na derivacao. */
+const VAULT_B64=/^[A-Za-z0-9+/]+={0,2}$/;
+function parseVault(raw){
+ let blob=raw;
+ if(typeof blob==="string"){try{blob=JSON.parse(blob)}catch(e){return null}}
+ if(!blob||typeof blob!=="object")return null;
+ const salt=blob.salt,iv=blob.iv,payload=blob.data;
+ if(typeof salt!=="string"||typeof iv!=="string"||typeof payload!=="string")return null;
+ if(!salt||!iv||!payload)return null;
+ if(!VAULT_B64.test(salt)||!VAULT_B64.test(iv)||!VAULT_B64.test(payload))return null;
+ return {v:blob.v||1,salt:salt,iv:iv,data:payload};
+}
+async function decryptData(password,raw){
+ const blob=parseVault(raw);
+ if(!blob)throw new Error("VAULT_FORMAT");
+ const key=await deriveKey(password,bytes(blob.salt));
+ const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:bytes(blob.iv)},key,bytes(blob.data));
+ return JSON.parse(new TextDecoder().decode(pt));
+}
+/* Somente a falha de autenticacao do AES-GCM significa senha diferente.
+   Envelope truncado, texto em vez de objeto ou versao desconhecida sao
+   reportados como problema de formato, nunca como senha errada. */
+async function decryptVault(password,raw){
+ if(!parseVault(raw))return {ok:false,reason:"format"};
+ try{
+   const value=await decryptData(password,raw);
+   return {ok:true,value:Array.isArray(value)?value:[]};
+ }catch(e){
+   return {ok:false,reason:e&&e.message==="VAULT_FORMAT"?"format":"password"};
+ }
+}
+const cats={entrada:["Vendas","Eventos","Salário","Transferência recebida","Outros"],saida:["Ingredientes","Bebidas","Embalagens","Energia","Água","Internet","Aluguel","Funcionários","Transporte","Manutenção","Marketing","Impostos","Compras","Transferência/Retirada","Outros"]};
+
+const brl=v=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(v||0);
+/* Datas de calendário devem usar a data local do dispositivo. toISOString()
+   usa UTC e, no Brasil, pode virar o dia seguinte depois das 21h. */
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+function fmtDate(s){return s?new Date(s+"T12:00:00").toLocaleDateString("pt-BR"):"—"}
+function daysUntil(s){return Math.ceil((new Date(s+"T12:00:00")-new Date(today()+"T12:00:00"))/86400000)}
+function statusClass(x){return x==="pago"?"paid":daysUntil(x.vencimento)<0?"overdue":"pending"}
+function statusText(x){if(x.status==="pago")return x.tipo==="entrada"?"Recebido":"Pago"; if(x.vencimento && daysUntil(x.vencimento)<0)return "Vencido"; return "Pendente"}
+function updateCats(){let el=document.getElementById("categoria"), old=el.value;el.innerHTML=cats[document.getElementById("tipo").value].map(x=>`<option>${x}</option>`).join("");if(cats[document.getElementById("tipo").value].includes(old))el.value=old}
+function updateStatusOptions(){
+ let s=document.getElementById("status"), old=s.value, entrada=document.getElementById("tipo").value==="entrada";
+ s.innerHTML=entrada?'<option value="pago">Recebido</option><option value="pendente">Pendente</option>':'<option value="pago">Pago</option><option value="pendente">Pendente</option>';
+ s.value=(old==="pendente"?"pendente":"pago");
+}
+document.getElementById("tipo").addEventListener("change",()=>{updateCats();updateStatusOptions()}); updateCats(); updateStatusOptions();
+document.getElementById("data").value=today();
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));document.getElementById(b.dataset.view).classList.add("active");render()});
+
+document.getElementById("form").onsubmit=async e=>{
+ e.preventDefault();
+ let base={id:crypto.randomUUID(),tipo:tipo.value,controle:controle.value,descricao:descricao.value,categoria:categoria.value,valor:Number(valor.value),data:dataEl(),vencimento:vencimento.value||dataEl(),forma:forma.value,status:(document.getElementById("status").value==="pendente"?"pendente":"pago"),recorrencia:recorrencia.value};
+ let qtd=Math.max(1,Math.min(60,Number(quantidade.value)||1));
+ for(let i=0;i<qtd;i++){let x={...base,id:crypto.randomUUID()};if(i>0){let d=new Date(base.vencimento+"T12:00:00");if(base.recorrencia==="mensal")d.setMonth(d.getMonth()+i);if(base.recorrencia==="semanal")d.setDate(d.getDate()+7*i);if(base.recorrencia==="anual")d.setFullYear(d.getFullYear()+i);x.vencimento=d.toISOString().slice(0,10);let bd=new Date(base.data+"T12:00:00");if(base.recorrencia==="mensal")bd.setMonth(bd.getMonth()+i);if(base.recorrencia==="semanal")bd.setDate(bd.getDate()+7*i);if(base.recorrencia==="anual")bd.setFullYear(bd.getFullYear()+i);x.data=bd.toISOString().slice(0,10);x.status="pendente"}data.push(stampRecord(x))}
+ await save();alert("Lançamento salvo com sucesso.");limparForm();render();
+};
+function dataEl(){return document.getElementById("data").value}
+function limparForm(){document.getElementById("form").reset();document.getElementById("data").value=today();document.getElementById("quantidade").value=1;updateCats();updateStatusOptions();document.getElementById("status").value="pago";updateStatusOptions()}
+/* Lancamentos excluidos permanecem no conjunto como marca de exclusao
+   ({id,deleted:true,deletedAt}) para que a exclusao se propague entre os
+   dispositivos em vez de reaparecer na sincronizacao seguinte. Toda leitura
+   passa por activeData(). */
+function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function activeData(){return data.filter(x=>x&&!x.deleted&&/^[A-Za-z0-9_-]{1,100}$/.test(x.id))}
+function filtered(){return activeData().filter(x=>(!fControle.value||x.controle===fControle.value)&&(!fTipo.value||x.tipo===fTipo.value)&&(!fStatus.value||x.status===fStatus.value)&&(!fMes.value||x.data.startsWith(fMes.value))).sort((a,b)=>b.data.localeCompare(a.data))}
+[fControle,fTipo,fStatus,fMes].forEach(x=>x.onchange=render);
+
+function openNewFor(controleValor){
+ limparForm();
+ document.getElementById("controle").value=controleValor;
+ document.getElementById("status").value="pago";
+ updateStatusOptions();
+ document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ document.getElementById("lancamento").classList.add("active");
+ document.querySelector('nav button[data-view="lancamento"]').classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function homeCard(label,value,cls){return `<div class="card"><div class="label">${label}</div><div class="value ${cls}">${brl(value)}</div></div>`}
+function render(){
+ let month=today().slice(0,7);
+ const calc=(arr,t,c)=>arr.filter(x=>x.status==="pago"&&x.tipo===t&&(!c||x.controle===c)).reduce((s,x)=>s+x.valor,0);
+ let ep=calc(data,"entrada","pessoal"), sp=calc(data,"saida","pessoal"), er=calc(data,"entrada","restaurante"), sr=calc(data,"saida","restaurante");
+ let pendIn=activeData().filter(x=>x.status==="pendente"&&x.tipo==="entrada").reduce((s,x)=>s+x.valor,0);
+ let pendOut=activeData().filter(x=>x.status==="pendente"&&x.tipo==="saida").reduce((s,x)=>s+x.valor,0);
+ let mes=activeData().filter(x=>x.data.startsWith(month)), mesIn=calc(mes,"entrada"), mesOut=calc(mes,"saida");
+ let pMes=activeData().filter(x=>x.data.startsWith(month)&&x.controle==="pessoal");
+ let rMes=activeData().filter(x=>x.data.startsWith(month)&&x.controle==="restaurante");
+ let pRec=pMes.filter(x=>x.tipo==="entrada"&&x.status==="pendente").reduce((s,x)=>s+x.valor,0);
+ let pPag=pMes.filter(x=>x.tipo==="saida"&&x.status==="pendente").reduce((s,x)=>s+x.valor,0);
+ let rRec=rMes.filter(x=>x.tipo==="entrada"&&x.status==="pendente").reduce((s,x)=>s+x.valor,0);
+ let rPag=rMes.filter(x=>x.tipo==="saida"&&x.status==="pendente").reduce((s,x)=>s+x.valor,0);
+ cards.innerHTML=`
+ <div class="home-section">
+  <div class="home-section-title">👤 FINANÇAS PESSOAIS</div>
+  <div class="grid">
+   ${homeCard("Saldo atual",ep-sp,ep-sp>=0?"green":"red")}
+   ${homeCard("Entradas do mês",calc(pMes,"entrada"),"green")}
+   ${homeCard("Saídas do mês",calc(pMes,"saida"),"red")}
+   ${homeCard("A receber",pRec,"orange")}
+   ${homeCard("A pagar",pPag,"orange")}
+  </div>
+ </div>
+ <div class="home-section">
+  <div class="home-section-title">🍽️ FINANÇAS DO RESTAURANTE</div>
+  <div class="grid">
+   ${homeCard("Saldo atual",er-sr,er-sr>=0?"green":"red")}
+   ${homeCard("Entradas do mês",calc(rMes,"entrada"),"green")}
+   ${homeCard("Saídas do mês",calc(rMes,"saida"),"red")}
+   ${homeCard("A receber",rRec,"orange")}
+   ${homeCard("A pagar",rPag,"orange")}
+  </div>
+  <button class="mobile-new primary" onclick="openNewFor('restaurante')">＋ Novo lançamento (Restaurante)</button>
+ </div>`;
+ let due=activeData().filter(x=>x.status==="pendente"&&x.vencimento&&daysUntil(x.vencimento)>=0&&daysUntil(x.vencimento)<=7).sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
+ let overdue=activeData().filter(x=>x.status==="pendente"&&x.vencimento&&daysUntil(x.vencimento)<0).sort((a,b)=>b.vencimento.localeCompare(a.vencimento));
+ homeDue.innerHTML=due.length?due.map(dueRow).join(""):'<div class="empty">Nenhuma conta vencendo nos próximos 7 dias.</div>';
+ homeOverdue.innerHTML=overdue.length?overdue.map(dueRow).join(""):'<div class="empty">Nenhuma conta vencida.</div>';
+ tbody.innerHTML=filtered().map(x=>`<tr><td>${fmtDate(x.data)}</td><td>${escapeHTML(x.descricao)}</td><td>${x.tipo==="entrada"?"Entrada":"Saída"}</td><td>${x.controle==="pessoal"?"Pessoal":"Restaurante"}</td><td>${escapeHTML(x.categoria)}</td><td class="${x.tipo==="entrada"?"green":"red"}">${x.tipo==="entrada"?"+":"-"} ${brl(x.valor)}</td><td><span class="status ${statusClass(x)}">${statusText(x)}</span></td><td class="actions"><button class="btn-edit" onclick="editItem('${x.id}')">✏️ Editar</button>${x.status==="pendente"?`<button class="btn-pay" onclick="pay('${x.id}')">${x.tipo==="entrada"?"Recebido":"Pago"}</button>`:""}<button class="btn-delete" onclick="delItem('${x.id}')">🗑️</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Nenhuma movimentação encontrada.</td></tr>`;
+ let reportMonthEl=document.getElementById("reportMonth");
+ if(reportMonthEl && !reportMonthEl.value)reportMonthEl.value=month;
+ let reportPeriod=reportMonthEl?.value||month;
+ let m=activeData().filter(x=>x.data.startsWith(reportPeriod)), en=m.filter(x=>x.tipo==="entrada").reduce((s,x)=>s+x.valor,0), sa=m.filter(x=>x.tipo==="saida").reduce((s,x)=>s+x.valor,0);
+ let pendingPeriod=m.filter(x=>x.status==="pendente").reduce((s,x)=>s+x.valor,0);
+ reportCards.innerHTML=[["Entradas",en,"green"],["Saídas",sa,"red"],["Resultado",en-sa,en-sa>=0?"green":"red"],["Contas pendentes",pendingPeriod,"orange"]].map(x=>`<div class="card"><div class="label">${x[0]}</div><div class="value ${x[2]}">${brl(x[1])}</div></div>`).join("");
+ let map={};m.forEach(x=>{map[x.categoria]??={e:0,s:0};map[x.categoria][x.tipo==="entrada"?"e":"s"]+=x.valor});catBody.innerHTML=Object.entries(map).map(([k,v])=>`<tr><td>${escapeHTML(k)}</td><td class="green">${brl(v.e)}</td><td class="red">${brl(v.s)}</td></tr>`).join("")||'<tr><td colspan="3" class="empty">Sem dados no período selecionado.</td></tr>';
+ if(reportMonthEl)reportMonthEl.onchange=render;
+ dueList.innerHTML=(activeData().filter(x=>x.status==="pendente"&&x.vencimento).sort((a,b)=>a.vencimento.localeCompare(b.vencimento))).map(d=>`<div class="card" style="margin-bottom:8px"><div class="actions"><strong>${escapeHTML(d.descricao)}</strong><span class="status ${statusClass(d)}">${statusText(d)}</span><span style="margin-left:auto">${brl(d.valor)}</span></div><div class="label">Vencimento: ${fmtDate(d.vencimento)} · ${escapeHTML(d.controle)} · ${escapeHTML(d.categoria)}</div><div class="actions" style="margin-top:8px"><button class="success" onclick="pay('${d.id}')">☑ Marcar como pago</button></div></div>`).join("")||'<div class="empty">Nenhum vencimento pendente.</div>';
+ loadPrefs();
+}
+function dueRow(d){let n=daysUntil(d.vencimento);let txt=n<0?`vencida há ${Math.abs(n)} dia(s)`:n===0?"vence hoje":`vence em ${n} dia(s)`;return `<div style="padding:9px 0;border-bottom:1px solid var(--line)"><strong>${escapeHTML(d.descricao)}</strong> — ${brl(d.valor)} · ${fmtDate(d.vencimento)} <span class="label">(${txt})</span></div>`}
+async function pay(id){let x=activeData().find(x=>x.id===id);if(x){x.status="pago";stampRecord(x);await save();render()}}
+let editBase=null;
+function editItem(id){
+ let x=activeData().find(y=>y.id===id); if(!x)return;
+ editBase=JSON.stringify(x);
+ document.getElementById("editId").value=x.id;
+ document.getElementById("eTipo").value=x.tipo;
+ document.getElementById("eControle").value=x.controle;
+ document.getElementById("eDescricao").value=x.descricao;
+ updateEditCats(x.categoria);
+ document.getElementById("eValor").value=x.valor;
+ document.getElementById("eData").value=x.data;
+ document.getElementById("eVencimento").value=x.vencimento||"";
+ document.getElementById("eForma").value=x.forma||"Outro";
+ updateEditStatus(x.status);
+ document.getElementById("editModal").classList.add("show");
+}
+function updateEditCats(selected){let el=document.getElementById("eCategoria");el.innerHTML=cats[document.getElementById("eTipo").value].map(x=>`<option>${x}</option>`).join("");if(selected)el.value=selected}
+function updateEditStatus(selected){
+ let s=document.getElementById("eStatus"), entrada=document.getElementById("eTipo").value==="entrada";
+ s.innerHTML=entrada?'<option value="pago">Recebido</option><option value="pendente">Pendente</option>':'<option value="pago">Pago</option><option value="pendente">Pendente</option>';
+ s.value=selected||"pago";
+}
+document.getElementById("eTipo")?.addEventListener("change",()=>{updateEditCats();updateEditStatus(document.getElementById("eStatus").value)});
+function closeEdit(){document.getElementById("editModal").classList.remove("show")}
+async function delItem(id){
+ if(!confirm("Excluir este lançamento permanentemente?"))return;
+ let existed=false;
+ const kept=[];
+ for(const x of data){
+   if(x&&x.id===id){if(!x.deleted)existed=true;continue}
+   kept.push(x);
+ }
+ data=kept;
+ if(existed)data.push({id:id,deleted:true,deletedAt:new Date().toISOString()});
+ await save();render();
+}
+document.getElementById("eTipo")?.addEventListener("change",()=>updateEditCats());
+function loadPrefs(){let p=JSON.parse(localStorage.getItem(PREF)||'{"7":true,"3":true,"1":true,"0":true,"over":true}');n7.checked=p["7"];n3.checked=p["3"];n1.checked=p["1"];n0.checked=p["0"];nover.checked=p.over}
+["n7","n3","n1","n0","nover"].forEach(id=>document.getElementById(id).onchange=()=>{localStorage.setItem(PREF,JSON.stringify({"7":n7.checked,"3":n3.checked,"1":n1.checked,"0":n0.checked,over:nover.checked}));});
+document.getElementById("editForm").onsubmit=async e=>{
+ e.preventDefault();
+ let x=activeData().find(y=>y.id===document.getElementById("editId").value); if(!x)return;
+ if(JSON.stringify(x)!==editBase){alert('Este lançamento mudou desde a abertura. Reabra a edição para revisar.');return;}
+ x.tipo=eTipo.value;x.controle=eControle.value;x.descricao=eDescricao.value;x.categoria=eCategoria.value;
+ x.valor=Number(eValor.value);x.data=eData.value;x.vencimento=eVencimento.value||eData.value;x.forma=eForma.value;x.status=eStatus.value;
+ stampRecord(x);
+ await save();closeEdit();render();alert("Alterações salvas com sucesso.");
+};
+function notifications(){let p=JSON.parse(localStorage.getItem(PREF)||'{"7":true,"3":true,"1":true,"0":true,"over":true}'), msgs=[];activeData().filter(x=>x.status==="pendente"&&x.vencimento).forEach(x=>{let n=daysUntil(x.vencimento);if((n===7&&p["7"])||(n===3&&p["3"])||(n===1&&p["1"])||(n===0&&p["0"])||(n<0&&p.over))msgs.push(`${escapeHTML(x.descricao)}: ${n<0?"vencida":n===0?"vence hoje":`vence em ${n} dias`} — ${brl(x.valor)}`)});if(msgs.length&&"Notification"in window&&Notification.permission==="granted")new Notification("Meu Controle Financeiro",{body:msgs.slice(0,3).join("\n")});}
+</script>
+<script>
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+      if (registration.waiting) {
+        showUpdateNotice(registration);
+      }
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener("statechange", () => {
+          if (worker.state === "installed" && navigator.serviceWorker.controller) {
+            showUpdateNotice(registration);
+          }
+        });
+      });
+    } catch (err) {
+      console.warn("Service Worker não pôde ser registrado:", err);
+    }
+  });
+}
+function showUpdateNotice(registration) {
+  if (document.getElementById("updateNotice")) return;
+  const box=document.createElement("div");
+  box.id="updateNotice";
+  box.style.cssText="position:fixed;left:14px;right:14px;bottom:78px;z-index:90;background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px 14px;box-shadow:0 8px 30px #0002;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px";
+  box.innerHTML='<span>🔄 Há uma nova versão disponível.</span><button class="primary" style="padding:8px 12px" onclick="applyUpdate()">Atualizar</button>';
+  document.body.appendChild(box);
+  window.__pendingSW=registration.waiting;
+}
+async function applyUpdate(){
+  const sw=window.__pendingSW;
+  if(sw) sw.postMessage({type:"SKIP_WAITING"});
+  else location.reload();
+}
+if ("serviceWorker" in navigator) {
+  const hadController=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {if(hadController)location.reload();});
+}
+
+</script>
+ <script src="sync-store.js"></script>
+ <script src="auth.js"></script>
+ <script src="about.js"></script>
+</body>
+</html>
