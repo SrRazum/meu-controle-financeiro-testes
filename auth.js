@@ -198,4 +198,4 @@ window.addEventListener('online',()=>syncNow(true));
 window.addEventListener('storage',event=>{if(event.key===SIGNED_OUT&&event.newValue==='1')void activate(null);});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void syncNow(true);});
 setInterval(()=>syncNow(),15000);
-window.addEventListener('DOMContentLoaded',()=>{ $('appVersion').textContent='V1.15 · desenvolvimento';refreshSyncUI();void initCloud(); });
+window.addEventListener('DOMContentLoaded',()=>{ $('appVersion').textContent='V1.15 · teste de atualização 2';refreshSyncUI();void initCloud(); });
