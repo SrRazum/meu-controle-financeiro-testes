@@ -91,7 +91,7 @@ form{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.full{grid-column
 .sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#9ca3af;margin-right:5px}
 .sync-dot.ok{background:#22c55e}.sync-dot.err{background:#ef4444}.sync-dot.busy{background:#f59e0b}
 #syncModal{position:fixed;inset:0;background:#0008;z-index:110;display:none;align-items:center;justify-content:center;padding:18px}
-#syncModal.show{display:flex}.sync-box{width:min(440px,100%);background:#fff;border-radius:16px;padding:22px;box-shadow:0 18px 60px #0004}
+#syncModal.show{display:flex}.sync-box{max-height:90vh;overflow:auto;width:min(440px,100%);background:#fff;border-radius:16px;padding:22px;box-shadow:0 18px 60px #0004}
 .sync-box{max-height:90vh;overflow:auto}.sync-box h3{margin:0 0 8px}.sync-box p{font-size:13px;color:var(--muted);line-height:1.45}
 .sync-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.sync-actions button{flex:1;min-width:120px}
 #syncMsg{min-height:20px;font-size:13px;color:#991b1b;margin:8px 0}
@@ -154,6 +154,16 @@ th{background:#fbefe5}
 <button onclick="importLegacy('cloud')">Importar cofre antigo da conta</button>
 <button onclick="importLegacy('local')">Importar cofre antigo deste dispositivo</button>
 <p id="syncRecoverResult" role="status" aria-live="polite" style="white-space:pre-wrap"></p>
+<hr>
+<h4>Backup opcional deste dispositivo</h4>
+<p class="small">Salve uma cópia criptografada dos dados, pendências e conflitos. A senha abaixo protege apenas o arquivo e não é necessária para usar o aplicativo. Sem ela, não será possível abrir a cópia. Restaure somente na mesma conta e em um perfil sem dados dessa conta.</p>
+<label for="backupPassword">Senha do arquivo (mínimo 10 caracteres)</label>
+<input id="backupPassword" type="password" autocomplete="off">
+<button onclick="accountBackup()">Baixar backup protegido</button>
+<label for="backupFile">Arquivo de backup para restaurar</label>
+<input id="backupFile" type="file" accept=".json,application/json">
+<button onclick="accountBackup(true)">Restaurar backup protegido</button>
+<p id="backupResult" role="status" aria-live="polite"></p>
 </div>
 <div class="small">Os dados locais e da nova nuvem não têm criptografia de cofre. O acesso remoto usa sua conta e conexão segura. Em dispositivos compartilhados, use um perfil separado do navegador.</div>
 </div></div>
@@ -517,6 +527,7 @@ if ("serviceWorker" in navigator) {
 
 </script>
  <script src="sync-store.js"></script>
+ <script src="backup.js"></script>
  <script src="auth.js"></script>
  <script src="about.js"></script>
 </body>

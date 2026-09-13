@@ -49,7 +49,7 @@ async function activate(session){
   const ticket=++epoch;account=next;unlocked=false;
   retryAt=0;failures=0;
   data=[];view=[];render();closeEdit();limparForm();$('editForm').reset();
-  $('conflicts').replaceChildren();$('syncRecoverPassword').value='';$('syncRecoverResult').textContent='';
+  $('conflicts').replaceChildren();$('syncRecoverPassword').value='';$('syncRecoverResult').textContent='';$('backupResult').textContent='';$('backupPassword').value='';$('backupFile').value='';
   $('lockScreen').classList.remove('hidden');refreshSyncUI();
   if(!next){statusTextSync('Entre na sua conta. A fila de cada conta permanece neste dispositivo.','');return;}
   try{
@@ -198,4 +198,36 @@ window.addEventListener('online',()=>syncNow(true));
 window.addEventListener('storage',event=>{if(event.key===SIGNED_OUT&&event.newValue==='1')void activate(null);});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void syncNow(true);});
 setInterval(()=>syncNow(),15000);
-window.addEventListener('DOMContentLoaded',()=>{ $('appVersion').textContent='V1.15 · teste de atualização 2';refreshSyncUI();void initCloud(); });
+window.addEventListener('DOMContentLoaded',()=>{ $('appVersion').textContent='V1.15 · backup de testes';refreshSyncUI();void initCloud(); });
+
+let backupBusy=false;
+async function accountBackup(restore=false){
+ if(!account||!unlocked||backupBusy)return;
+ const uid=account.id,ticket=epoch,project=window.SUPABASE_URL,password=$('backupPassword').value;
+ const result=$('backupResult');
+ if(password.length<10){result.textContent='Use uma senha de pelo menos 10 caracteres para proteger ou abrir o arquivo.';return;}
+ backupBusy=true;result.textContent=restore?'Verificando backup…':'Preparando arquivo protegido…';
+ try{
+  if(restore){
+   const file=$('backupFile').files?.[0];
+   if(!file)throw Error('Selecione o arquivo de backup.');
+   if(file.size>15*1024*1024)throw Error('Arquivo maior que o limite de 15 MB.');
+   let backup;try{backup=await decryptData(password,JSON.parse(await file.text()));}catch(e){throw Error('Não foi possível abrir o backup. Confira a senha e a integridade do arquivo.');}
+   const state=FinanceBackup.validate(backup,uid,project);
+   if(ticket!==epoch)return;
+   if(!confirm(`Restaurar ${state.records.length} registros e ${Object.keys(state.pending).length} pendências para ${account.email}? O envio será retomado quando houver conexão.`)){result.textContent='Restauração cancelada.';return;}
+   const restored=await FinanceStore.update(uid,current=>{if(ticket!==epoch)throw Error('A conta mudou.');return FinanceBackup.restore(current,backup,uid,project);});
+   if(ticket!==epoch)return;
+   display(restored);result.textContent='Backup restaurado neste dispositivo. Acompanhe a sincronização e revise eventuais conflitos.';void syncNow(true);
+  }else{
+   const backup=FinanceBackup.create(await FinanceStore.read(uid),uid,project);
+   const text=JSON.stringify(await encryptData(password,backup));
+   if(text.length>15*1024*1024)throw Error('Backup maior que o limite de 15 MB.');
+   if(ticket!==epoch)return;
+   const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),link=document.createElement('a');
+   link.href=url;link.download='controle-financeiro-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+   result.textContent='Download solicitado. Confira o arquivo salvo e guarde sua senha em local seguro. A cópia inclui pendências e conflitos deste dispositivo.';
+  }
+ }catch(e){if(ticket===epoch)result.textContent=e.message;}
+ finally{backupBusy=false;if(ticket===epoch){$('backupPassword').value='';$('backupFile').value='';}}
+}

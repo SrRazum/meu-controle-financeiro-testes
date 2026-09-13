@@ -1,7 +1,7 @@
-const APP_VERSION = "financeiro-v1.15-dev-6";
+const APP_VERSION = "financeiro-v1.15-dev-7";
 const CACHE_PREFIX = `meu-controle-${self.registration.scope}-`;
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
-const APP_SHELL = ["./", "./index.html", "./config.js", "./auth.js", "./sync-store.js", "./vendor/supabase.js", "./about.js", "./manifest.json", "./logo.png"];
+const APP_SHELL = ["./", "./index.html", "./config.js", "./auth.js", "./sync-store.js", "./backup.js", "./vendor/supabase.js", "./about.js", "./manifest.json", "./logo.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
 });
