@@ -27,7 +27,28 @@
   return S.copy(state);
  }
  function create(state,uid,project){const backup={format:'finance-account-backup',version:1,uid,project,createdAt:new Date().toISOString(),state:S.copy(state)};validate(backup,uid,project);return backup;}
- function restore(current,backup,uid,project){const state=validate(backup,uid,project);if(current.records.length||Object.keys(current.pending).length||Object.keys(current.conflicts).length)throw Error('Este dispositivo já contém dados desta conta. Use um perfil vazio para restaurar; não apague seus dados atuais.');return state;}
+ function restore(current,backup,uid,project){
+  const incoming=validate(backup,uid,project),next=S.copy(current),records=new Map(next.records.map(x=>[x.id,x]));
+  for(const record of incoming.records){
+   const id=record.id,local=records.get(id),op=Object.hasOwn(incoming.pending,id)?incoming.pending[id]:null;
+   const localOp=Object.hasOwn(next.pending,id)?next.pending[id]:null;
+   if(localOp){
+    if(op&&!S.equal(localOp.value,op.value))throw Error('Há alterações pendentes diferentes para o mesmo lançamento. Sincronize e resolva as pendências atuais antes de restaurar. Nenhum dado foi substituído.');
+    continue;
+   }
+   // Current records win over historical, already-synced backup records.
+   if(local&&!op)continue;
+   if(local&&S.equal(local,record))continue;
+   records.set(id,S.copy(record));
+   // An absent historical record must be checked against the server before recovery.
+   next.pending[id]=op?S.copy(op):{opId:crypto.randomUUID(),base:S.copy(record),value:S.copy(record)};
+   if(local&&!S.equal(local,next.pending[id].base))next.conflicts[id]={remote:S.copy(local)};
+   else if(Object.hasOwn(incoming.conflicts,id))next.conflicts[id]=S.copy(incoming.conflicts[id]);
+  }
+  next.records=[...records.values()];
+  validate(create(next,uid,project),uid,project);
+  return next;
+ }
  root.FinanceBackup={validate,create,restore};
  if(typeof module!=='undefined')module.exports=root.FinanceBackup;
 })(globalThis);

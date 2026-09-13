@@ -198,7 +198,7 @@ window.addEventListener('online',()=>syncNow(true));
 window.addEventListener('storage',event=>{if(event.key===SIGNED_OUT&&event.newValue==='1')void activate(null);});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void syncNow(true);});
 setInterval(()=>syncNow(),15000);
-window.addEventListener('DOMContentLoaded',()=>{ $('appVersion').textContent='V1.15 · backup de testes';refreshSyncUI();void initCloud(); });
+window.addEventListener('DOMContentLoaded',()=>{ $('appVersion').textContent='V1.15 · restauração segura';refreshSyncUI();void initCloud(); });
 
 let backupBusy=false;
 async function accountBackup(restore=false){
@@ -215,7 +215,7 @@ async function accountBackup(restore=false){
    let backup;try{backup=await decryptData(password,JSON.parse(await file.text()));}catch(e){throw Error('Não foi possível abrir o backup. Confira a senha e a integridade do arquivo.');}
    const state=FinanceBackup.validate(backup,uid,project);
    if(ticket!==epoch)return;
-   if(!confirm(`Restaurar ${state.records.length} registros e ${Object.keys(state.pending).length} pendências para ${account.email}? O envio será retomado quando houver conexão.`)){result.textContent='Restauração cancelada.';return;}
+   if(!confirm(`Restaurar ${state.records.length} registros e ${Object.keys(state.pending).length} pendências para ${account.email}? Os dados atuais serão preservados; diferenças podem exigir revisão. O envio será retomado quando houver conexão.`)){result.textContent='Restauração cancelada.';return;}
    const restored=await FinanceStore.update(uid,current=>{if(ticket!==epoch)throw Error('A conta mudou.');return FinanceBackup.restore(current,backup,uid,project);});
    if(ticket!==epoch)return;
    display(restored);result.textContent='Backup restaurado neste dispositivo. Acompanhe a sincronização e revise eventuais conflitos.';void syncNow(true);
